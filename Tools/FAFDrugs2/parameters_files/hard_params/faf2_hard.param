@@ -1,0 +1,74 @@
+######################
+## drug-like filter ##
+######################
+
+#LogP Calculation by Xscore? -- If yes put the bin path of xscore package
+xscore = on
+xscore_path = /home/david/FAFDrugsV2.0/extras/xscore_v1.2.1/bin/
+
+#Gnuplot tool
+gnuplot = on
+
+#file to process
+file = 10Molecules.sdf
+
+#group_param_file
+group_param_file = groups.param
+
+#Lipinski's violations
+max_lipinski = 1
+
+#filter by molecular weight
+inf_mw = 250
+sup_mw = 500
+
+#hydrogen bond donors 
+inf_hbd = 0
+sup_hbd = 5
+
+#hydrogen bond acceptors
+inf_hba = 0
+sup_hba = 10
+
+#heavy atoms
+inf_hva = 10
+sup_hva = 25
+
+#number of rotable bonds
+inf_nbb = 0
+sup_nbb = 15
+
+#number of rigid bonds
+inf_nrb = 0
+sup_nrb = 50
+
+#number of rings
+inf_nc = 0
+sup_nc = 7
+
+#size of the largest ring
+max_ring = 7
+
+#Polar Surface Area
+inf_psa = 0.0
+sup_psa = 140.0
+
+#LogP
+inf_logp = -2
+sup_logp = 6
+
+#number of formal charges
+inf_cf = 0
+sup_cf = 3
+
+#sum of formal charges
+inf_sc = -2
+sup_sc = 2
+
+#ratio carbons / heteroatoms
+inf_c = 5    #minimum number of carbon atoms
+sup_c = 35   #maximum number of carbon atoms
+inf_h = 2    #minimum number of heteroatoms
+sup_h = 20   #maximum number of heteroatoms
+inf_r = 0.1  #minimum ratio
+sup_r = 1.0  #maximum ratio

@@ -1,0 +1,151 @@
+Availability and requirements
+-------------------------------
+Project home page: http://www.vls3d.com/programs.html#section11
+Operating system: Linux
+Programming language: Python
+Other requirements:
+- Python 2.5.2 freely available at:
+http://www.python.org/download/
+- OpenBabel release 2.1.1 included in one extra directory in the FAF-Drugs2
+package and freely available at:
+http://sourceforge.net/project/showfiles.php?group_id=40728
+Check if C, C++, F77 and Fortran compilers are installed in your Operating System
+- Gnuplot 4.2.3 [5] freely available at:
+http://www.gnuplot.info/download.html
+   Check if png libraries used in gnuplot are installed on your Operating System.
+- X-Score [6] (to computer for instance log P), freely available under license agreement 
+at (we do not provide it, you need to contact the authors, one default method to computer log P is however implemented
+in the present distribution, yet it would be important to have X-Score):
+http://sw16.im.med.umich.edu/software/xtool/manual/download.html
+License: GPL
+Any restrictions to use by non-academics: None
+
+
+
+
+How to install FAF-Drugs2?
+--------------------------------
+Steps 1 to 4 and 7 are REQUIRED, steps 5 and 6 are optional but important.
+We assume you do not have OpenBabel and Python packages installed.
+Even Python programming language is already installed, you will have to re-compile it after having installed OpenBabel.
+
+
+1:
+In your home directory, uncompress the FAF-Drugs2 package in a Linux shell (tar -xvzf FAFDrugs2.tar.gz).
+It creates one directory named "/FAF-Drugs2" containing the subdirectories:
+~/bin			Contains Python executables files and modules.
+~/extras		Contains the OpenBabel 2.1.1 package.
+			This is the directory where you can install OpenBabel and Python programming language. As well, here you
+			can deposit and install X-Score and GnuPlot package. In this case, please see sections 5-6.
+~/parameters_files	Contains soft and hard generics faf2.param and groups.param that you can customize as you want.
+			Note that they must be placed in your working and modified as needed.
+~/example		Contains a small generic dataset for running FAF-Drugs2.
+~/doc			Contains the UserGuide, X-Score installing procedure and a standard FAF-Drugs2 installing procedure.
+
+IMPORTANT:
+Set the executable path for FAF-Drugs2 in your ".bash_profile" or ".cshrc".
+For instance, in my ".bash_profile" file I have:
+PATH=$PATH:$HOME/bin:/home/david/FAFDrugs2/bin:
+For ".cshrc", set path = ($path ~/FAFDrugs2/bin)
+
+
+
+2: OpenBabel
+Check if GCC, G++, g77 and gfortran compilers are installed in your Operating System, maybe,
+it could be a possible cause of abnormal compilation of OpenBabel toolkit.
+Go to ~/FAFDrugs2/extras/ directory and install the OpenBabel package in a Linux shell as follows:
+
+*    tar -xvzf openbabel.2.1.1.tar.gz
+*    cd openbabel.2.1.1
+*    ./configure
+*    make
+Under root permissions
+*    make install
+
+3: Python
+After downloading Python2.5.2.tar.gz, in the extra directory or in your home directory install the Python
+programming language package in a Linux shell as follows:
+
+*    tar -xvzf Python-2.5.2.tgz
+*    cd Python-2.5.2
+*    ./configure
+*    make
+Under root permissions
+*    make install
+
+4: Installing Pybel module is needed to bind Python with OpenBabel :
+
+*    cd scripts/python
+*    python setup.py build
+Under root permissions
+*    python setup.py install
+
+WARNING:
+If you are running X86_64bits architecture machine you must edit the file /usr/local/lib/python2.5/site-packages/openbabel.py
+and replace the line "import dl" with "import DLFCN as dl"
+
+5: X-Score (Optional).
+If your compound library exceeds 10.000 molecules, you will need to install the X-Score package as follow (this is to compute XLogP
+values for a large collection, the default tool implemented in OpenBabel has a bug, this will be solved soon, in any case, X-score is a
+must to have. After registration, you can download the software, put it in the
+"extras" directory and install it as follow.
+
+*    tar -xvzf xscore.tar.gz
+*    cd xscore_v1.2.1/c++/
+*    make
+*    cp xscore ../bin/
+
+NOTES:
+-	If you are going to use X-Score toolkit, please check that in the file <faf2.param> you have switched the xscore flag to "on"
+-	You need to place your license agreement file in your home directory.
+ 
+
+6: GnuPlot (Optional).
+After downloading GnuPlot 4.2.3, put it in the "extras" directory and install it as follow:
+
+*    tar -xvzf gnuplot-4.2.3.tar.gz
+*    cd gnuplot-4.2.3
+*    ./configure
+*    make
+Under root permissions
+*    make install
+
+NOTE:
+-	If you are going to use the GnuPlot toolkit, check that in the file <faf2.param> (see parameters files section) you have switched
+the gnuplot flag to "on".
+-	Check if png libraries used in gnuplot are installed on your Operating System, maybe it could be a reason of problem during
+generation of histograms 
+
+
+7: Setting the environment variables.
+Edit your ".bashrc" (or ".cshrc") and add these lines (example for bash shell, please check the internet for additional explanations
+or for C shell equivalent):
+
+-	OpenBabel
+
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+for ".cshrc" :
+setenv LD_LIBRARY_PATH /usr/local/lib
+
+-	X-Score
+
+export XTOOLS_HOME=$XTOOLS_HOME:"FAFDrugs2 path install"
+ for instance on my machine I have:
+ export XTOOLS_HOME=$XTOOLS_HOME:/home/david/FAFDrugs2/extras/xscore_v1.2.1
+export XTOOLS_PARAMETERS=$XTOOLS_HOME/parameters
+export XTOOLS_BIN=$XTOOLS_HOME/bin
+
+
+or to your ".cshrc":
+setenv XTOOL_HOME   the_installation_directory_of_X-Score
+for instance XTOOL_HOME  /home/david/FAFDrugs2/extras/xscore_v1.2.1
+setenv XTOOL_PARAMETER  $XTOOL_HOME/parameter
+setenv XTOOL_BIN  $XTOOL_HOME/bin
+set path = ($path  $XTOOL_BIN)
+
+
+Add the executable path for X-Score and FAFDrugs2 to your searching PATH, for instance I have in my ".bashrc" searching PATH:
+
+PATH=$PATH:$HOME/bin:/home/david/FAFDrugs2/extras/xscore_v1.2.1/bin:/home/david/FAFDrugs2/bin:
+export PATH

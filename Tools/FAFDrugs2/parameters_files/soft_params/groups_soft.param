@@ -1,0 +1,225 @@
+#################################################################################################
+# WARHEADS (25)
+#################################################################################################
+#
+0	Sulfonyl_halide
+0	Acyl_halide
+0	Alkyl_halide
+0	Anhydride
+0	1_2_dicarbonyl
+0	Perhaloketone
+0	Aliphatic_ketone
+0	Epoxide
+0	Aziridine
+0	Aliphatic_ester
+0	Aliphatic_thioester
+0	Sufonate_ester
+0	Phosphonate_ester
+0	Imine
+0	Aldehyde
+0	Michael_acceptor
+0	b_heterosubstitued_carbonyl
+0	Oxalyl
+0	Heteroatom_heteroatom_O_O
+0	Heteroatom_heteroatom_O_N
+0	Heteroatom_heteroatom_N_N
+0	Heteroatom_heteroatom_N_S
+0	Heteroatom_heteroatom_S_O
+0	Heteroatom_heteroatom_S_S
+0	Halopyrimidine
+#
+#################################################################################################
+# FREQUENTS HITTERS (15)
+#################################################################################################
+#
+0	Dextrotiroxina-sodica
+0	Methyldopamine
+0	Diethylstilbestrol
+0	Tocopherol
+0	Calciferol
+0	Benserazide
+0	Dextrotiroxina
+0	Idebenone
+0	Dopamine
+0	Triazolam
+0	Clofazimine
+0	Fenoterol
+0	Apomorphine
+0	SF85190
+0	Troglitazone
+#
+#################################################################################################
+# AGGREGATORS (48)
+#################################################################################################
+#
+1	Indirubin
+0 	2_17
+0	1_13_2
+0	1_08
+0	1_07
+0	1_06
+0	1_04
+0	2_19
+0	2_18_3
+0	2_06
+0	2_05
+0	2_04
+0	2_03
+0	2_02
+0	2_01
+0	Sulconazole
+0	Rottlerin
+0	Ro318220
+0	Nicardipine
+0	Miconazole
+0	K252c
+0	Indigo
+0	Econazole
+0	Clotrimazole
+0	Bisindolylmalemide_i
+0	Benzyl_benzoate
+0	2_20
+0	2_16
+0	2_15
+0	2_14
+0	2_13
+0	2_11
+0	2_10
+0	2_08
+0	2_07
+0	1_12
+0	1_11
+0	1_10
+0	1_09
+0	1_05
+0	1_03
+0	1_02
+0	1_01
+0	2_09
+0	2_12
+0	Delavirdine
+1	Quercetin
+0	U0126
+##
+###################################################################################################
+## SPECIFIC, UNDESIRABLE FUNCTIONNALS GROUPS (37)
+###################################################################################################
+##
+0	Carbazide
+1	Acid_anhydride
+0	Pentafluorophenyl_esters
+0	Paranitrophenyl_esters
+0	HOBT_esters
+0	Triflate
+0	Lawesson_s_reagent
+0	Phosphoramide
+1	Azide
+1	Cytochalasin_derivatives
+4	Cycloheximide_derivatives
+0	Acylhydrazide
+0	Phosphorane
+1	Chloramidine
+0	Nitroso
+0	P_S_Halide
+0	Carbodiimide
+0	Saponin_derivatives
+1	Monensin_derivatives
+0	Cyanidin_derivatives
+0	Isonitrile
+0	Triacyloxime
+0	Cyanohydrine
+0	Acyl_cyanides
+0	Sulfonyl_cyanide
+0	Cyanophosphonates
+0	Azocyanamides
+0	Azoalkanals
+1	Polyenes
+1	Squalestatin_derivatives
+2	Quinone
+2	Alkyl_phosphate
+0	Phosphinic_acid
+0	Phosphines_phosphanes
+0	Imidoyl_halide
+0	Sulfonyl_nitrile
+0	Phosphonyl_nitrile
+0	Azo
+1	Di-peptide
+0	Beta_Halo_Carbonyl
+2	Unbranched_chain
+1	Nitro
+0	Peroxide
+1	Phosphonic_acid
+1	Phosphonic_ester
+0	Phosphoric_acid
+1	Phosphoric_ester
+1	Sulfonic_acid
+0	Sulfonic_ester
+1	Terminal_vinyl
+1	Hydrazine
+1	Propiolactones
+0	Iodoxy
+0	Iodoso
+0	N-Oxide
+6	alcohol
+4	alkene
+4	amide
+4	intra_amino_acid
+4	C_terminal_amino_acid
+4	N-terminal_amino_acid
+4	amine_all
+2	carboxylic_acid
+1	iodine
+4	phenol
+2	Sulfonamide
+1	Sulfonylurea
+0	Oxaziridine
+1	Cyclopropyl
+2	Guanidine
+1	Hydroxamic_acid
+2	Phosphoryl
+2	Alkyne
+4	Aniline
+4	Aryl_halide
+2	Carbamate
+5	Ether
+2	Sulfoxide
+1	Thiourea
+1	Thioamide
+1	Thiol
+2	Urea
+1	Hydrazone
+1	Hydroxylamine
+2	Nitrile
+2	Sulfide
+2	Sulfone
+0	Disulfite
+1	Enamine
+1	Enol_ether
+0	Organometallic
+0	Dithioacetate	
+1	Oxime
+0	Isothiocyanate
+0	Isocyanate
+3	Lactam		
+3	Lactone
+1	Carbonate
+0	Carbamic_acid
+1	Thiocarbamate
+0	Triazine123
+0	Triazine124
+0	Triazine135
+1	Malonic
+0	Benzyloxycarbonyl
+1	t_butoxycarbonyl
+0	Fluorenylmethoxycarbonyl
+1	Tetrahydropyran
+1	Methoxyethoxymethyl
+2	Benzylether
+2	Butylether
+0	Trimethylsilyl
+0	t_butyldimethylsilyl
+0	triisopropylsilyl
+0	t_butyldiphenylsilyl
+1	Phthalimides
+##
+####################################################################################################

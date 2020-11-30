@@ -1,0 +1,2 @@
+ 1025  gcc icliq.v2.c 
+ 1026  ./a.out xtot_filtered_ser.out xxx > xxx.out
