@@ -164,6 +164,6 @@ if __name__ == "__main__" :
 			sql_insert(con_main,fg,zids_string,sub_dict)
 
 
-	memoryDB2diskDB(con_main,'test.db')
+	memoryDB2diskDB(con_main,'ZINC_R2.db')
 	subdf = pd.DataFrame.from_dict(sub_dict,orient='index').reset_index().rename(columns={'index':'Rgroup'})
 	subdf.to_pickle('subname.pkl')

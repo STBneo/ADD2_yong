@@ -1,4 +1,4 @@
-import os,sys,glob,subprocess,apsw
+import os,sys,glob,subprocess,apsw,itertools
 import multiprocessing
 from multiprocessing import Process,Manager
 from functools import partial
@@ -116,6 +116,7 @@ def checkmol_activation(afile,tmp_dic,con,a,zid_list,dup_zid_list):
 	re_checkmol = re_checkmol.strip()
 	re_checkmol = re_checkmol.decode('ascii')
 	token = re_checkmol.split(';')[:-1]
+
 	try :
 		if zid_list[zinc_id] == 1:
 			dup_zid_list[zinc_id] = 0
@@ -235,7 +236,7 @@ if __name__ == '__main__':
 	st_time = time.time() # script start time
 	zid_list = Manager().dict() # non duplicate zinc id
 	dup_zid_list = Manager().dict() # duplicate zinc id
-	dir_list = ['khit_compound']#['XIn_181','XIn_182','XIn_183','XIn_187','XIn_188','XIn_189','XIn_190','XIn_192','XIn_196']#[d for d in os.listdir('.') if not os.path.isfile(d)] # directory list
+	dir_list = ['XIn_181','XIn_182','XIn_183','XIn_187','XIn_188','XIn_189','XIn_190','XIn_192','XIn_196']#[d for d in os.listdir('.') if not os.path.isfile(d)] # directory list
 	Ncpu = multiprocessing.cpu_count() #len(dir_list)
 	for i in dir_list: # directory seris work
 		Dir_process(Ncpu,i,st_time)
