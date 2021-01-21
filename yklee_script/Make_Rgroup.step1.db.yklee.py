@@ -1,4 +1,4 @@
-import os,sys,glob,subprocess,apsw,itertools
+import os,sys,glob,subprocess,apsw
 import multiprocessing
 from multiprocessing import Process,Manager
 from functools import partial
@@ -101,14 +101,11 @@ def temp_DB_work(a):
 
 
 def checkmol_activation(afile,tmp_dic,con,a,zid_list,dup_zid_list):
-	print(afile)
 	with open(afile,'r') as F:
 		zinc_id = F.readlines()[0].strip()
-	zinc_id = afile.split('.')[0].strip()
 	try:
 		#re_checkmol = subprocess.check_output('/lwork01/yklee_temp/zinc_work/zinc_split/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
-		#re_checkmol = subprocess.check_output('/lwork01/swshin/1D_Scan*/Tools/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
-		re_checkmol = subprocess.check_output('/lwork02/yklee/temp_dir/yklee_work/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
+		re_checkmol = subprocess.check_output('/lwork01/swshin/1D_Scan*/Tools/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
 	except:
 		print 'Some Error in tmp.sdf'
 		return
@@ -116,7 +113,6 @@ def checkmol_activation(afile,tmp_dic,con,a,zid_list,dup_zid_list):
 	re_checkmol = re_checkmol.strip()
 	re_checkmol = re_checkmol.decode('ascii')
 	token = re_checkmol.split(';')[:-1]
-
 	try :
 		if zid_list[zinc_id] == 1:
 			dup_zid_list[zinc_id] = 0
@@ -168,10 +164,9 @@ def print_time(pname,st_time,dirn,filn): # stamping time
 def SDF_process_core(file_name,dirn,st_time): # Write DB by sdf file
 	con = sql_connection()
 	sql_create_table(con)
-	#os.system('csplit --suppress-matched -z -f \'%s-\' %s \'/$$$$/\' \'{*}\' --quiet'%(file_name.split('.')[0],file_name)) # sdf split by $$$$
-	#print_time('Merge SDF Split by $$$$',st_time,dirn,file_name)
-	f_list = [file_name]#glob.glob(file_name) #'%s'%file_name.split('.')[0])
-	print(f_list)
+	os.system('csplit --suppress-matched -z -f \'%s-\' %s \'/$$$$/\' \'{*}\' --quiet'%(file_name.split('.')[0],file_name)) # sdf split by $$$$
+	print_time('Merge SDF Split by $$$$',st_time,dirn,file_name)
+	f_list = glob.glob('%s-*'%file_name.split('.')[0])
 	n_of_token = 0
 	FG_dic = load_FG()
 	
@@ -193,12 +188,9 @@ def SDF_process_core(file_name,dirn,st_time): # Write DB by sdf file
 
 
 def Dir_process(Ncpu,dirn,st_time): # multiprocessing core function
-	os.chdir('%s/'%dirn)
+	os.chdir('%s/merge_sdf/'%dirn)
 	os.system('rm *.pkl *.csv')
 	sdf_list = sorted(glob.glob('*.sdf'))
-	#for sdf in sdf_list:
-	#	SDF_process_core(sdf,dirn,st_time)
-
 	pool = multiprocessing.Pool(Ncpu-1)
 	func = partial(SDF_process_core,dirn=dirn,st_time=st_time)
 	pool.map(func,sdf_list)
@@ -236,7 +228,7 @@ if __name__ == '__main__':
 	st_time = time.time() # script start time
 	zid_list = Manager().dict() # non duplicate zinc id
 	dup_zid_list = Manager().dict() # duplicate zinc id
-	dir_list = ['XIn_181','XIn_182','XIn_183','XIn_187','XIn_188','XIn_189','XIn_190','XIn_192','XIn_196']#[d for d in os.listdir('.') if not os.path.isfile(d)] # directory list
+	dir_list = [d for d in os.listdir('.') if not os.path.isfile(d)] # directory list
 	Ncpu = multiprocessing.cpu_count() #len(dir_list)
 	for i in dir_list: # directory seris work
 		Dir_process(Ncpu,i,st_time)

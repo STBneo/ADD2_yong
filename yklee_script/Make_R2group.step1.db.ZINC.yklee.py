@@ -62,7 +62,7 @@ def load_FG():  # checkmol output code - R Group Name
 
 def sql_connection():
     try:
-        con = apsw.Connection(':memory:')  # ,check_same_thread=False)
+        con = apsw.Connection(':memory:')
         return con
     except Error:
         print(Error)
@@ -71,14 +71,14 @@ def sql_connection():
 
 def sql_create_table(con):
     cursorObj = con.cursor()
-    cursorObj.execute('CREATE TABLE R_Table(Rgroup txt PRIMARY KEY, zid text)')
+    cursorObj.execute('CREATE TABLE R2_Table(R2group txt PRIMARY KEY, zid text)')
     return
 
 
 def sql_insert(con, entities):
     cursorObj = con.cursor()
     try:
-        cursorObj.execute('INSERT INTO R_Table(Rgroup, zid) VALUES(?,?)', entities)
+        cursorObj.execute('INSERT INTO R2_Table(R2group, zid) VALUES(?,?)', entities)
         return 1
     except apsw.ConstraintError:
         return 0
@@ -87,7 +87,7 @@ def sql_insert(con, entities):
 def sql_update(con, entities):
     cursorObj = con.cursor()
     try:
-        cursorObj.execute('UPDATE R_Table SET zid=? WHERE Rgroup=?', entities)
+        cursorObj.execute('UPDATE R2_Table SET zid=? WHERE R2group=?', entities)
     # print('UPDATE')
     except:
         sys.exit()
@@ -105,20 +105,20 @@ def temp_DB_connection(a):
 def temp_DB_work(a):
     con = temp_DB_connection(a)
     cursorObj = con.cursor()
-    query = cursorObj.execute("SELECT * FROM R_Table")
+    query = cursorObj.execute("SELECT * FROM R2_Table")
     cols = [column[0] for column in query.description]
     df = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
     con.close()
     return df
 
 
-def checkmol_activation(afile, tmp_dic, con, a, zid_list, dup_zid_list):
+def checkmol_activation(afile, tmp_dic, con, zid_list, dup_zid_list):
     with open(afile, 'r') as F:
         zinc_id = F.readlines()[0].strip()
     try:
         # re_checkmol = subprocess.check_output('/lwork01/yklee_temp/zinc_work/zinc_split/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
-        #re_checkmol = subprocess.check_output('/lwork01/swshin/1D_Scan*/Tools/checkmol -cs %s' % afile,stderr=subprocess.STDOUT, shell=True)
-        re_checkmol = subprocess.check_output('/lwork02/yklee/temp_dir/yklee_work/checkmol -cs %s'$afile,stderr=subprocess.STDOUT,shell=True)
+        # re_checkmol = subprocess.check_output('/lwork01/swshin/1D_Scan*/Tools/checkmol -cs %s'%afile,stderr=subprocess.STDOUT,shell=True)
+        re_checkmol = subprocess.check_output('/lwork02/yklee/temp_dir/yklee_work/checkmol -cs %s' % afile,stderr=subprocess.STDOUT, shell=True)
     except:
         print 'Some Error in tmp.sdf'
         return
@@ -126,33 +126,38 @@ def checkmol_activation(afile, tmp_dic, con, a, zid_list, dup_zid_list):
     re_checkmol = re_checkmol.strip()
     re_checkmol = re_checkmol.decode('ascii')
     token = re_checkmol.split(';')[:-1]
-    strtokens = []
-    for i in token:
-        strtokens.append(tmp_dic[i])
-    try:
-        if zid_list[zinc_id] == 1:
-            dup_zid_list[zinc_id] = 0
-    except:
-        for rgroup in itertools.combinations(strtokens,2):
-            zid_list[zinc_id] = 1
-            cursorObj = con.cursor()
-            rgroup = '&'.join(sorted(list(rgroup)))
-            query = "SELECT * FROM R_Table WHERE Rgroup LIKE \'%s\'" % rgroup
+    a = 0
+    if len(token) == 0 or len(token) == 1:
+        dup_zid_list[zinc_id] = 0
+        pass
+    else:
+        strtokens = []
+        for i in token:
+            strtokens.append(tmp_dic[i])
 
-            cursorObj.execute(query)
-            rows = cursorObj.fetchall()
-            cursorObj.close()
-            if not rows:
-                a += 1
-                entities = (rgroup, zinc_id)
-                sql_insert(con, entities)
+        try:
+            if zid_list[zinc_id] == 1:
+                pass
+        except:
+            for rgroup in itertools.combinations(strtokens,2):
+                zid_list[zinc_id] = 1
+                cursorObj = con.cursor()
+                rgroup = '^^'.join(sorted(list(rgroup)))
 
-            else:
-                ppp = unicode.encode(rows[0][1], 'utf-8') + ',' + zinc_id
-                entities = (ppp, rows[0][0])
-                sql_update(con, entities)
+                query = "SELECT * FROM R2_Table WHERE R2group LIKE \'%s\'" % rgroup
+
+                cursorObj.execute(query)
+                rows = cursorObj.fetchall()
+                cursorObj.close()
+                if not rows:
+                    entities = (rgroup, zinc_id)
+                    sql_insert(con, entities)
+
+                else:
+                    ppp = unicode.encode(rows[0][1], 'utf-8') + ',' + zinc_id
+                    entities = (ppp, rows[0][0])
+                    sql_update(con, entities)
     os.remove(afile)
-    return a
 
 
 def memoryDB2diskDB(con, DB_name):  # memory DB to Disk DB
@@ -185,21 +190,18 @@ def print_time(pname, st_time, dirn, filn):  # stamping time
 def SDF_process_core(file_name, dirn, st_time):  # Write DB by sdf file
     con = sql_connection()
     sql_create_table(con)
-    os.system('csplit --suppress-matched -z -f \'%s-\' %s \'/$$$$/\' \'{*}\' --quiet' % (
-    file_name.split('.')[0], file_name))  # sdf split by $$$$
-    print_time('Merge SDF Split by $$$$', st_time, dirn, file_name)
-    f_list = glob.glob('%s-*' % file_name.split('.')[0])
-    n_of_token = 0
+    os.system('csplit --suppress-matched -z -f \'%s-\' %s \'/$$$$/\' \'{*}\' --quiet'%(file_name.split('.')[0],file_name)) # sdf split by $$$$
+    print_time('Merge SDF Split by $$$$',st_time,dirn,file_name)
+    f_list = glob.glob('%s-*'%file_name.split('.')[0])
     FG_dic = load_FG()
 
     for i in f_list:
-        n_of_token = checkmol_activation(i, FG_dic, con, n_of_token, zid_list,
-                                         dup_zid_list)  # checkmol active & write db on memory
-    for f in glob.glob('%s-*' % file_name.split('.')[0]):
-        os.remove(f)
-    print_time('Make DB For R-group', st_time, dirn, file_name)
+        checkmol_activation(i, FG_dic, con, zid_list,dup_zid_list)  # checkmol active & write db on memory
+    #for f in glob.glob('%s-*'% file_name.split('.')[0]):
+    #    os.remove(f)
+    print_time('Make DB For R2-group', st_time, dirn, file_name)
     cursorObj = con.cursor()
-    query = cursorObj.execute("SELECT * FROM R_Table")
+    query = cursorObj.execute("SELECT * FROM R2_Table")
     cols = [column[0] for column in query.description]
     df = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
     df.to_pickle('./' + file_name.split('.')[0] + '.pkl')  # make pickle
@@ -213,6 +215,9 @@ def Dir_process(Ncpu, dirn, st_time):  # multiprocessing core function
     os.chdir('%s/merge_sdf/' % dirn)
     os.system('rm *.pkl *.csv')
     sdf_list = sorted(glob.glob('*.sdf'))
+    #for sdf in sdf_list:
+    #    SDF_process_core(sdf,dirn,st_time)
+
     pool = multiprocessing.Pool(Ncpu - 1)
     func = partial(SDF_process_core, dirn=dirn, st_time=st_time)
     pool.map(func, sdf_list)
@@ -233,16 +238,13 @@ def Make_integrationDB(st_time, db_name):  # DB merge
             df = pd.read_pickle(i).rename(columns={'zid': 'zid_%s' % (str(j))})  # make directory pickle file
         # df = temp_DB_work(i)
         df_list.append(df)
-    medf = reduce(lambda x, y: pd.merge(x, y, on='Rgroup', how='outer'), df_list)
+    medf = reduce(lambda x, y: pd.merge(x, y, on='R2group', how='outer'), df_list)
     cols = medf.columns[1:]
-    medf['ZID'] = medf[cols].apply(lambda row: ','.join(row.values.astype(str)), axis=1).str.replace('nan,',
-                                                                                                     '').str.replace(
-        ',nan', '')
+    medf['ZID'] = medf[cols].apply(lambda row: ','.join(row.values.astype(str)), axis=1).str.replace('nan,','').str.replace(',nan', '')
     final_df = medf.drop(cols, axis=1)
     if db_name == 'final_inte':
-        con = sqlite3.connect('../final_inte.db')
-        final_df.to_sql('R_Table', con, index=False)
-        print_time('Make Integration DB', st_time, os.getcwd(), 'final_inte.db')
+        final_df.to_pickle('../final_inte.pkl')
+        print_time('Make Integration DB', st_time, os.getcwd(), 'final_inte.pkl')
 
     else:
         final_df.to_pickle('../../' + db_name + '.pkl')
@@ -253,15 +255,13 @@ if __name__ == '__main__':
     st_time = time.time()  # script start time
     zid_list = Manager().dict()  # non duplicate zinc id
     dup_zid_list = Manager().dict()  # duplicate zinc id
-    dir_list = ['XIn_181'] #[d for d in os.listdir('.') if not os.path.isfile(d)]  # directory list
+    dir_list = ['XIn_181']#, 'XIn_182', 'XIn_183']#, 'XIn_187', 'XIn_188', 'XIn_189', 'XIn_190', 'XIn_192','XIn_196']  # [d for d in os.listdir('.') if not os.path.isfile(d)] # directory list
     Ncpu = multiprocessing.cpu_count()  # len(dir_list)
     for i in dir_list:  # directory seris work
         Dir_process(Ncpu, i, st_time)
-    dup_df = pd.DataFrame.from_dict(dup_zid_list, orient='index').reset_index().rename(
-        columns={'index': 'zinc_id'}).drop([0], axis=1)
-    dup_df.to_csv('../dup_zinc_id.txt', sep='\t', index=False)  # duplicate id file
-    zid_df = pd.DataFrame.from_dict(zid_list, orient='index').reset_index().rename(columns={'index': 'zinc_id'}).drop(
-        [0], axis=1)
-    zid_df.to_csv('../zinc_id.txt', sep='\t', index=False)  # non duplicate id file
-
+    if not dup_zid_list:
+        pass
+    else:
+        dup_df = pd.DataFrame.from_dict(dup_zid_list, orient='index').reset_index().rename(columns={'index': 'zinc_id'}).drop([0], axis=1)
+        dup_df.to_csv('../dup_zinc_id.txt', sep='\t', index=False)  # duplicate id file
     Make_integrationDB(st_time, 'final_inte')
