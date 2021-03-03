@@ -1,4 +1,4 @@
-import os,sys,glob,subprocess,apsw,itertools,argparse
+import os,sys,glob,subprocess,apsw,itertools,argparse,marshal
 import multiprocessing
 from multiprocessing import Manager,Process
 from functools import partial
@@ -71,152 +71,42 @@ def load_FG():  # checkmol output code - R Group Name
                'C3O2HO1H': 'alpha-hydroxyacid'}
     return tmp_dic
 
-def load_FG2():
-    with open('FG_combination.code.yklee.marshal','rb') as F:
-        didi = marshal.load(F)
-    return didi
-def sql_connection_IDR():
-    try :
-        con = apsw.Connection('./Data/DB_Table/ZINC_IDR.db')
-        return con
-    except Error:
-        print(Error)
-        sys.exit(1)
-        return
-
 def sql_connection():
-    try :
+    try:
         con = apsw.Connection(':memory:')
         return con
     except Error:
         print(Error)
         sys.exit(1)
-        return
+
 def sql_create_table(con):
-    cursorObj = con.cursor()
-    cursorObj.execute("CREATE TABLE R2_Table(R2group txt PRIMARY KEY, ZID text)")
+    cursorObj=con.cursor()
+    cursorObj.execute('CREATE TABLE R2_Table (R2group txt PRIMARY KEY,ZID text)')
+    cursorObj.close()
     return
+
 def sql_insert(con,entities):
     cursorObj = con.cursor()
     try:
-        query = 'INSERT INTO R2_Table(R2group,zid) VALUES(?,?)'
+        query = "INSERT INTO R2_Table(R2group,zid) VALUES(?,?)"
         cursorObj.execute(query,entities)
-        # cursorObj.execute("INSERT INTO R_Table(Rgroup,zid) VALUES(?,?)",entities)
+        cursorObj.close()
         return 1
     except:
-        print(rid)
+        cursorObj.close()
         return 0
 
-
-def sql_update(con, entities):
+def sql_update(con,entities):
     cursorObj = con.cursor()
     try:
-        cursorObj.execute('UPDATE R2_Table SET zid=? WHERE R2group=?', entities)
+        query = "UPDATE R2_Table SET zid=? WHERE R2group=?"
+        cursorObj.execute(query,entities)
+        cursorObj.close()
+        return 1
     except:
-        except_update(entities)
+        cursorObj.close()
         pass
-        #sys.exit()
-def sql_connection_R2():
-    try :
-        con = apsw.Connection('/ssd/yklee/1D_Scan.v2/Data/DB_Table/ZINC_R2.db')
-        return con
-    except Error:
-        print(Error)
-        sys.exit(1)
-        return
-
-def Key_dic_load():
-    didi = {}
-    with open('/ssd/yklee/1D_Scan.v2/Result_CDK7_input.dat','r') as F:
-        for i in marshal.load(F):
-            didi[i[0]]= i[1]
-    print("Key Load OK")
-    return didi
-
-def SCF_result_load():
-    lili = []
-    with open('/devc24/swshin/1D_Scan.v2/Data/1D_Out_SCF/SCF_Out.list.Per.SMILES.txt','r') as F:
-        for line in F.readlines():
-            lili.append(line.strip())
-
-    print("SCF results Load OK")
-    return lili
-def KR_result_analysis(k_set,mlist):
-    Ncpu = multiprocessing.cpu_count()
-
-    with open('../Data/FLT3_input_Temp_SCF/SCF_Out.list.Per.SMILES.txt','r') as F:
-        a = 0
-        b = 0
-        #print(F.readlines()[:10])
-        flines = F.readlines()
-        lend = len(flines)//100
-        print(lend)
-        lili = list(divide_list(flines,lend))
-        for li in lili:
-            for line in li:#F.readlines():
-
-                tline = line.strip().split(',')
-                zid = tline[2]
-                p_set = find_zid_IDR(zid)
-                Key_dics[zid] = [p_set,tline]
-            b +=1
-            pool = multiprocessing.Pool(Ncpu-2)
-            func = partial(SCF_result_analysis_core,k_set=k_set,mlist=mlist,Key_dics=Key_dics)
-            pool.map(func,Key_dics.keys())
-            pool.close()
-            pool.join()
-            with open('result_%s.txt'%str(b),'w') as W:
-                for line2 in mlist:
-                    W.write(line2 + '\n')
-            mlist[:] = Manager().list()
-
-def divide_list(ls,n):
-    #n = 25
-    for i in range(0,len(ls),n):
-        yield l[i:i+n]
-
-def find_zid(alp):
-    query = 'SELECT * FROM R2_Table WHERE R2group=\'%s\''%(alp)
-    conR2cursor.execute(query)
-    rows = conR2cursor.fetchall()
-    if not rows:
-        pass
-    else:
-        ppp = unicode.encode(rows[0][1],'utf-8')
-        p_set = set(ppp.split(','))
-        print("Find R2 %s ID set OK"%alp)
-        return p_set
-
-def find_zid_IDR(alp):
-    cursorObj = con.cursor()
-    query = "SELECT * FROM IDR_Table WHERE Zid=\'%s\'"%(alp)
-    cursorObj.execute(query)
-    rows = cursorObj.fetchall()
-    cursorObj.close()
-    if not rows:
-        pass
-    else:
-        ppp = unicode.encode(rows[0][1],'utf-8')
-        p_set = set(ppp.split(','))
-        return p_set
-
-def SCF_to_Key(zid,mlist,id_sets,plist,pos_list):
-    zzid = zid.split(',')[2]
-    for id_set in id_sets:
-        if zzid in id_set:
-            mlist.append(zid)
-            if zzid in pos_list:
-                plist.append(zid)
-            else:
-                pass
-        else:
-            pass
-
-def memoryDB2diskDB(con, DB_name):  # memory DB to Disk DB
-    dest = apsw.Connection(DB_name)
-    with dest.backup('main', con, 'main') as backup:
-        backup.step()
-    dest.close()
+        return 0
 
 def checkmol_activation(afile, tmp_dic, con, zid_list, dup_zid_list):
     with open(afile, 'r') as F:
@@ -232,7 +122,6 @@ def checkmol_activation(afile, tmp_dic, con, zid_list, dup_zid_list):
     re_checkmol = re_checkmol.strip()
     re_checkmol = re_checkmol.decode('ascii')
     token = re_checkmol.split(';')[:-1]
-    a = 0
     if len(token) == 0 or len(token) == 1:
         dup_zid_list[zinc_id] = 0
         pass
@@ -270,32 +159,34 @@ def checkmol_activation(afile, tmp_dic, con, zid_list, dup_zid_list):
                     entities = (ppp, rows[0][0])
                     sql_update(con, entities)
 
-def input_Temp_R2(input_dir,FG_dic,FG_dic2):
-    con = sql_connection()
+def input_Temp_R2(input_dir,FG_dic):
+    con =sql_connection()
     sql_create_table(con)
     os.chdir(input_dir)
     input_sdfs = sorted(glob.glob('*.sdf'))
     zid_list = {}
     dup_zid_list = {}
     for i in input_sdfs:
-        checkmol_activation(i,FG_dic,con,zid_list,dup_zid_list,FG_dic2)
+        checkmol_activation(i,FG_dic,con,zid_list,dup_zid_list)
     cursorObj = con.cursor()
-    query = cursorObj.execute('SELECT * FROM R2_Table')
+    query = cursorObj.execute("SELECT * FROM R2_Table")
     cols = [column[0] for column in query.description]
     df = pd.DataFrame.from_records(data=query.fetchall(),columns=cols)
-    os.chdir('../../')
+    os.chdir('../../Tools/')
     return df
 
-def searching_part1(zid,mlist):
-    zzid = zid.split(',')[2]
-    if zzid in tset:
-        mlist[zid] = 1
-    else:
-        pass
-def dropop(i):
-    df1 = tdf[tdf[0] == i]
-    df2 = df1.drop_duplicates()
-    return df2
+
+
+def make_dir(a):
+    try:
+        if os.path.exists(a):
+            os,chdir(a)
+            pass
+        else:
+            os.mkdir(a)
+            os.chdir(a)
+    except:
+        print('DIR CREATE ERROR')
 
 def input_analysis():
     ppp = sorted(list(set(plist.values())),reverse=True)
@@ -304,7 +195,6 @@ def input_analysis():
     for i,j in zip(range(0,len(ppp)),ppp):
         ttt[j] = i
     pdf = pd.DataFrame.from_dict(plist,orient='index').reset_index().rename(columns={'index':'Rgroup',0:'Freq'}).sort_values(by='Freq',ascending=False).reset_index(drop=True)
-    cdf = pd.DataFrame.from_dict(clist,orient='index').reset_index().rename(columns={'index':'Rgroup',0:'Freq'}).sort_values(by='Freq',ascending=False).reset_index(drop=True)
     for i in pdf['Freq']:
         lll.append(ttt[i])
     pdf['Rank'] = lll
@@ -316,20 +206,10 @@ def input_analysis():
         lili.append('{:.3f}'.format(t_p))
     pdf['Percent'] = pd.DataFrame(lili).astype(float)
     print(pdf)
-    return pdf,cdf
+    return pdf
 def analysis_R2(df,top_p,mins):
     outdf = df[df['Percent'] <= float(top_p)][df['Freq'] >= int(mins)]
     return outdf
-
-def make_directory(a):
-    try:
-        if os.path.exists(a):
-            os.chdir(a)
-        else:
-            os.mkdir(a)
-            os.chdir(a)
-    except:
-        print('DIR make Error')
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
@@ -338,79 +218,14 @@ if __name__ == "__main__":
     args=parser.parse_args()
 
     print(os.getcwd())
-    conR2 = sql_connection_R2()
-    conR2cursor = conR2.cursor()
-    mlist = Manager().list()
+    mlist = Manager().dict()
     plist = Manager().dict()
     Ncpu = multiprocessing.cpu_count()
-    tset = set()
-    global conR2cursor
-    global tset
     global plist
     FG_dic = load_FG()
-    FG_dic2 = load_FG2()
-    scf_list = SCF_result_load()
-    input_df = input_Temp_R2('/ssd/swshin/1D_Scan.v2/Data/Input_CDK7_270/',FG_dic)#'/ssd/yklee/1D_Scan.v2/Data/Input/',FG_dic)
+    input_df = input_Temp_R2('../Data/Input/',FG_dic)
     pdf = input_analysis()
     odf = analysis_R2(pdf,args.top_p,args.mins)
-    a = 0
-    os.chdir('/lwork01/yklee/')
-    try :
-        if os.path.exists('Key_R2_search'):
-            os.chdir('Key_R2_search')
-            print('True')
-            pass
-        else:
-            os.mkdir('Key_R2_search')
-            os.chdir('Key_R2_search')
-    except:
-        print('Error')
-
+    make_dir('Input_RG_Statistics')
     pdf.to_csv('Input_Temp_Freq.csv',index=False)
     odf.to_csv('Activate_Input.csv',index=False)
-    odf['Rgroup']
-    KR_result_analysis(k_set,mlist)
-    txts = sorted(glob.glob('tmp_*.txt'))
-    dfs = []
-    for i in txts:
-        df = pd.read_csv(i,header=None)
-        dfs.append(df)
-    tdf = pd.concat(dfs)
-    global tdf
-    lili = []
-    for i in sorted(df[0].drop_duplicates()):
-        df1 = dropop(i)
-        lili.append(df1)
-
-    df_fin = pd.concat(lili)
-    df_fin.to_csv('SKR_filt.result.csv',index=False)
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-top_p', required=True, default=100, help='Select the top X percent of R Group frequency.')
-    parser.add_argument('-mins', required=True, default=1, help='The minimum number of R Group.')
-    args = parser.parse_args()
-
-    print(os.getcwd())
-    conR2 = sql_connection_R2()
-    conR2cursor = conR2.cursor()
-    mlist = Manager().list()
-    plist = Manager().dict()
-    clist = Manager().dict()
-    Ncpu = multiprocessing.cpu_count()
-    tset = set()
-    global conR2cursor
-    global tset
-    global plist
-    global clist
-    FG_dic = load_FG()
-    FG_dic2 = load_FG2()
-    scf_list = SCF_result_load()
-    input_df = input_Temp_R2('/ssd/swshin/1D_Scan.v2/Data/Input_CDK7_270/', FG_dic)  # '/ssd/yklee/1D_Scan.v2/Data/Input/',FG_dic)
-    pdf = input_analysis()
-    odf = analysis_R2(pdf, args.top_p, args.mins)
-    a = 0
-    os.chdir('/lwork01/yklee/')
-    pdf.to_csv('Input_Temp_Freq.csv',index=False)
-    odf.to_csv('Activate_Input.csv',index=False)
-    iR2 = odf['Rgroup']

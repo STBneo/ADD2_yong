@@ -1,4 +1,4 @@
-import os, sys, glob, subprocess, apsw, itertools
+import os, sys, glob, subprocess, apsw, itertools,pickle,marshal
 import multiprocessing
 from multiprocessing import Process, Manager
 from functools import partial
@@ -61,4 +61,13 @@ def load_FG():  # checkmol output code - R Group Name
 
 if __name__ == "__main__":
     fg_dic = load_FG()
-    print(fg_dic)
+    fgs = sorted(fg_dic.values())
+    fgs_com = []
+    for i in itertools.combinations(fgs,2):
+        fgs_com.append(i)
+    didi = {}
+    for i,j in zip(fgs_com,range(0,len(fgs_com)+1)):
+        rgroup = '^^'.join(sorted(list(i)))
+        didi[rgroup] = 'RG' + str(j)
+    with open('FG_combination.code.yklee.marshal','wb') as W:
+        marshal.dump(didi,W)
