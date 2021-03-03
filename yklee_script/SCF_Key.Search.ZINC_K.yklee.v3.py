@@ -54,15 +54,17 @@ def SK_search():
     b = 0
     with open('../../1D_Out_SCF/SCF_Out.list.Per.SMILES.txt','r') as F:
         flines = F.readlines()
-        len_d = len(flines[:1000000])//10
-        div_list = list(divide_list(flines[:1000000],len_d))
+        len_d = len(flines)//10
+        div_list = list(divide_list(flines,len_d))
         for li in div_list:
             b += 1
+            print('Checking ID START Step %s by multiprocessing'%str(b))
             func = partial(check_intersection,mlist=mlist)
             pool = multiprocessing.Pool(Ncpu-2)
             pool.map(func,li)
             pool.close()
             pool.join()
+            print('Checking ID END Step %s'%str(b))
             with open('result_%s.txt'%str(b),'w') as W:
                 for line2 in mlist:
                     W.write(line2 + '\n')
@@ -84,6 +86,7 @@ def dropop(df,i):
 
 def make_dir(a):
     try:
+        print('Checking Directory')
         if os.path.exists(a):
             os.chdir(a)
             pass
@@ -98,6 +101,7 @@ def divide_list(ls,n):
         yield ls[i:i+n]
 
 def make_complete_file():
+    print('Integration Files')
     df_list = []
     for i in glob.glob('result_*.txt'):
         df = pd.read_csv(i,header=None)
@@ -109,9 +113,10 @@ def make_complete_file():
         df_list.append(df2)
     df_fin = pd.concat(df_list)
     df_fin.to_csv('SK_result.csv',index=False)
+    print('Completely make SK_result.csv')
 
 if __name__ == "__main__":
-
+    print('Scaffold - Key Search START')
     conK = sql_connection_K()
     key_dic = Key_dic_load()
 
@@ -125,11 +130,11 @@ if __name__ == "__main__":
 
     make_dir('./Data/SKR_Out/SK_result')
     print('N. Of Keys : ' + str(len(key_dic.keys())))
-    for i in key_dic.keys()[:10]:
+    for i in key_dic.keys():
         id_set = find_zid(i)
         tset = tset|id_set
 
     SK_search()
     make_complete_file()
     os.chdir('../../../')
-    print(os.getcwd())
+    print('Scaffold - Key Search END')
