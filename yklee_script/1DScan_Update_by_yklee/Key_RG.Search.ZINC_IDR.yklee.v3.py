@@ -69,41 +69,32 @@ def check_intersection(alp,mlist):
 def Key_RG_search():
     print(os.getcwd())
     Ncpu = multiprocessing.cpu_count()
-    #mlist = Manager().list()
+    mlist = Manager().list()
     b = 0
     with open('../SK_result/SK_result.csv','r') as F:
         flines = F.readlines()
-        len_d = len(flines)//99
+        len_d = len(flines)//10
         div_list = list(divide_list(flines,len_d))
         for li in div_list:
-            mlist = Manager().list()
-            Key_dics = Manager().dict()
-            global Key_dics
             b +=1
-            st = time.time()
+
             for line in li:
                 tline = line.strip().split(',')
                 zid = tline[2]
                 p_set = find_zid_IDR(zid)
                 Key_dics[zid] = [p_set,','.join(tline)]
             print('Checking ID START Step %s'%str(b))
-            #print('Work Time Step %s'%str(b))
-            #print(time.time()-st)
             pool = multiprocessing.Pool(Ncpu-2)
             func = partial(check_intersection,mlist=mlist)
             pool.map(func,Key_dics.keys())
             pool.close()
             pool.join()
             print('Checking ID END Step %s'%str(b))
-            print('Check Step %s Time : %f'%(str(b),time.time()-st))
-
             with open('result_%s.txt'%str(b),'w') as W:
                 for line2 in mlist:
                     W.write(line2 + '\n')
-            del mlist
-            del Key_dics
-            #mlist = Manager().list()
-            #Key_dics.clear()
+            mlist = Manager().list()
+            Key_dics.clear()
 
 def make_complete_file():
     print('Make Integration File')
@@ -144,8 +135,8 @@ if __name__ == "__main__":
     con = sql_connection_IDR()
     conIDRcursor = con.cursor()
     k_set = change_FG_code()
-    #Key_dics = Manager().dict()
-    global conIDRcursor,k_set
+    Key_dics = Manager().dict()
+    global conIDRcursor,k_set,Key_dics
     make_dir('./Data/SKR_Out/SKR_result')
     Key_RG_search()
     make_complete_file()
